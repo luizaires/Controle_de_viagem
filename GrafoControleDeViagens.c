@@ -7,6 +7,8 @@ typedef struct data data;
 typedef struct carro carro;
 typedef struct no no;
 typedef struct viagem viagem;
+carro *ford;
+carro *jimy;
 enum veiculo { FordK, Jimney } marca;
 enum abragencia {
   PauDosFerros = 0,
@@ -42,7 +44,7 @@ struct no {
 };
 
 struct viagem {
-  carro carro_viagem;
+  carro *carro_viagem;
   no *origem;
   no *destino;
   int distancia;
@@ -100,7 +102,6 @@ void lerNo(no *ptr) {
   scanf("%d", &ptr->cidade);
   printf("Data:\n");
   lerData(&ptr->data);
-  ptr->km_carro = 0;
   ptr->destino = NULL;
 }
 
@@ -110,10 +111,44 @@ no *criarNo() {
   return novoNo;
 }
 
-void inserirViagem(grafo *ptr, enum veiculo carro, no origem, no destino);
-viagem *buscarViagem(grafo *ptr, enum veiculo carro, no origem, no destino);
-void deletarViagem(grafo *ptr, enum veiculo carro, no origem, no destino);
-void exibirGrafo(grafo *ptr);
-void visualizarGrafo(grafo *ptr);
+void instanciarCarro(carro *ptrCarro, enum veiculo marca, int km_inicial) {
+  ptrCarro->marca = marca;
+  ptrCarro->km = km_inicial;
+}
 
-int main(void) { return 0; }
+void inserirViagem(grafo *gptr) {
+  viagem *ptrViagem = malloc(sizeof(viagem));
+  enum veiculo marca;
+  printf("Informe o veículo utilizado na viagem\n");
+  scanf("%d", &marca);
+  if (marca == FordK) {
+    ptrViagem->carro_viagem = ford;
+  }else{
+    ptrViagem->carro_viagem = jimy;
+  }
+  printf("Informe os dados de origem:\n");
+  ptrViagem->origem = criarNo();
+  lerNo(ptrViagem->origem);
+  ptrViagem->origem->km_carro = ptrViagem->carro_viagem->km;
+  printf("Informe os dados de destino:\n");
+  ptrViagem->destino = criarNo();
+  lerNo(ptrViagem->destino);
+  printf("Informe a quilometragem do carro no destino:\n");
+  scanf("%d", &ptrViagem->destino->km_carro);
+  ptrViagem->distancia =
+      ptrViagem->destino->km_carro - ptrViagem->origem->km_carro;
+  ptrViagem->carro_viagem->km = ptrViagem->destino->km_carro;
+  gptr->lista_adj[gptr->n_viagens] = ptrViagem->origem;
+  gptr->lista_adj[gptr->n_viagens]->destino = ptrViagem->destino;
+  gptr->n_viagens++;
+}
+viagem *buscarViagem(grafo *gptr, enum veiculo carro, no origem, no destino);
+void deletarViagem(grafo *gptr, enum veiculo carro, no origem, no destino);
+void exibirGrafo(grafo *gptr);
+void visualizarGrafo(grafo *gptr);
+
+int main(void) {
+  instanciarCarro(ford, 0, 20568);
+  instanciarCarro(jimy, 1, 78043);
+  return 0;
+}
